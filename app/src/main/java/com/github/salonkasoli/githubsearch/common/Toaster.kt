@@ -1,4 +1,4 @@
-package com.github.salonkasoli.githubsearch
+package com.github.salonkasoli.githubsearch.common
 
 import android.content.Context
 import android.widget.Toast

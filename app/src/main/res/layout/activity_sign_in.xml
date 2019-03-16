@@ -1,29 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:gravity="center"
-              android:padding="20dp">
-    <EditText
-            android:inputType="textEmailAddress"
-            android:hint="login"
-            android:id="@+id/login_edit_text"
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <LinearLayout android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:gravity="center"
+                  android:padding="20dp">
+        <EditText
+                android:inputType="textEmailAddress"
+                android:hint="login"
+                android:id="@+id/login_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <EditText
+                android:hint="password"
+                android:id="@+id/password_edit_text"
+                android:inputType="textPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:layout_gravity="right"
+                android:text="SIGN IN"
+                android:id="@+id/sign_in_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+    <FrameLayout
+            android:id="@+id/loading_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="match_parent"
+            android:background="@android:color/white"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:background="@android:color/transparent">
+        <ProgressBar
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"/>
 
-    <EditText
-            android:hint="password"
-            android:id="@+id/password_edit_text"
-            android:inputType="textPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+    </FrameLayout>
 
-    <Button
-            android:layout_gravity="right"
-            android:text="SIGN IN"
-            android:id="@+id/sign_in_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
 
-</LinearLayout>
+</FrameLayout>

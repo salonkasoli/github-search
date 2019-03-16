@@ -1,22 +1,29 @@
 package com.github.salonkasoli.githubsearch.signin
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.github.salonkasoli.githubsearch.App
 import com.github.salonkasoli.githubsearch.R
-import com.github.salonkasoli.githubsearch.Toaster
+import com.github.salonkasoli.githubsearch.common.Toaster
+import com.github.salonkasoli.githubsearch.signin.interact.AuthInteractor
 
 class SignInActivity : AppCompatActivity() {
 
     private lateinit var authInteractor: AuthInteractor
     private lateinit var toaster: Toaster
+    private lateinit var loadingView: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
-        this.authInteractor = AuthInteractor(App.instance.retrofit)
+        loadingView = findViewById(R.id.loading_view)
+        this.authInteractor = AuthInteractor(
+            App.instance.retrofit,
+            App.instance.githubUserCache
+        )
         this.toaster = Toaster(this)
         val loginEditText = findViewById<EditText>(R.id.login_edit_text)
         val passwordEditText = findViewById<EditText>(R.id.password_edit_text)
@@ -29,13 +36,15 @@ class SignInActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         authInteractor.setFailCallback {
+            loadingView.visibility = View.GONE
             toaster.show("smth wrong")
         }
         authInteractor.setSuccessCallback {
+            loadingView.visibility = View.GONE
             toaster.show("success")
         }
         authInteractor.setLoadingCallback {
-            toaster.show("loading")
+            loadingView.visibility = View.VISIBLE
         }
     }
 
