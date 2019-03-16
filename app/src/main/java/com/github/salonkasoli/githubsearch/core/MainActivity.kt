@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import com.github.salonkasoli.githubsearch.R
+import com.github.salonkasoli.githubsearch.search.SearchActivity
 import com.github.salonkasoli.githubsearch.signin.SignInActivity
 
 class MainActivity : AppCompatActivity() {
@@ -14,6 +15,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         findViewById<Button>(R.id.sign_in_button).setOnClickListener {
             startActivity(Intent(this, SignInActivity::class.java))
+        }
+        findViewById<Button>(R.id.search_button).setOnClickListener {
+            startActivity(Intent(this, SearchActivity::class.java))
         }
     }
 }
