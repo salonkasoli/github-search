@@ -1,7 +1,11 @@
 package com.github.salonkasoli.githubsearch.search
 
 import android.os.Bundle
+import android.util.Log
+import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuItemCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.salonkasoli.githubsearch.App
@@ -29,6 +33,24 @@ class SearchActivity : AppCompatActivity() {
 
         this.interactor = SearchInteractor(App.instance.retrofit)
         this.toaster = Toaster(this)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_search, menu)
+        val searchView = menu?.findItem(R.id.search_button)?.actionView as SearchView
+        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (query != null) {
+                    interactor.search(query)
+                }
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                return false
+            }
+        })
+        return true
     }
 
     override fun onResume() {

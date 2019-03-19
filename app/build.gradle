@@ -30,8 +30,9 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
 
     implementation 'com.squareup.retrofit2:retrofit:2.5.0'
-    implementation "com.squareup.retrofit2:adapter-rxjava2:2.5.0"
     implementation "com.squareup.retrofit2:converter-gson:2.5.0"
+
+    implementation 'com.facebook.fresco:fresco:1.13.0'
 
     implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
 

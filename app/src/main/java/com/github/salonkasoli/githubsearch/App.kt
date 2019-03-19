@@ -2,6 +2,7 @@ package com.github.salonkasoli.githubsearch
 
 import android.app.Application
 import android.util.Log
+import com.facebook.drawee.backends.pipeline.Fresco
 import com.github.salonkasoli.githubsearch.core.cache.GithubUserCache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -20,6 +21,7 @@ class App : Application() {
     override fun onCreate() {
         instance = this
         super.onCreate()
+        Fresco.initialize(this)
         githubUserCache = GithubUserCache()
         retrofit = Retrofit.Builder()
             .baseUrl("https://api.github.com/")
