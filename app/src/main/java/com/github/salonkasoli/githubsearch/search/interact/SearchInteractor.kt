@@ -11,7 +11,7 @@ class SearchInteractor(
 ) {
 
     private var failCallback: ((Unit) -> (Unit))? = null
-    private var successCallback: ((searchResponse: SearchResponse) -> (Unit))? = null
+    private var successCallback: ((searchResponse: SearchResponse, repoName: String) -> (Unit))? = null
     private var loadingCallback: ((Unit) -> (Unit))? = null
 
 
@@ -24,7 +24,7 @@ class SearchInteractor(
         retrofit.create(SearchApi::class.java).search(query, 1).enqueue(object : Callback<SearchResponse> {
             override fun onResponse(call: Call<SearchResponse>, response: Response<SearchResponse>) {
                 if (response.code() == 200) {
-                    successCallback?.invoke(response.body()!!)
+                    successCallback?.invoke(response.body()!!, repoName)
                 } else {
                     failCallback?.invoke(Unit)
                 }
@@ -40,7 +40,7 @@ class SearchInteractor(
         this.failCallback = callback
     }
 
-    fun setSuccessCallback(callback: ((searchResponse: SearchResponse) -> (Unit))?) {
+    fun setSuccessCallback(callback: ((searchResponse: SearchResponse, repoName: String) -> (Unit))?) {
         this.successCallback = callback
     }
 

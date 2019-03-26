@@ -17,7 +17,7 @@ import com.github.salonkasoli.githubsearch.search.model.GithubRepo
 class ReposListAdapter : RecyclerView.Adapter<ReposListAdapter.RepoViewHolder>() {
 
     private var repos: List<GithubRepo> = ArrayList()
-    fun setRepost(repos: List<GithubRepo>) {
+    fun setRepos(repos: List<GithubRepo>) {
         this.repos = repos
     }
 

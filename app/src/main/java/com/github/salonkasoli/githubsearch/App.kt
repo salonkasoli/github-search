@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.github.salonkasoli.githubsearch.core.cache.GithubUserCache
+import com.github.salonkasoli.githubsearch.core.cache.SearchCache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -17,12 +18,14 @@ class App : Application() {
 
     lateinit var retrofit: Retrofit
     lateinit var githubUserCache: GithubUserCache
+    lateinit var searchCache: SearchCache
 
     override fun onCreate() {
         instance = this
         super.onCreate()
         Fresco.initialize(this)
         githubUserCache = GithubUserCache()
+        searchCache = SearchCache()
         retrofit = Retrofit.Builder()
             .baseUrl("https://api.github.com/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -42,11 +45,11 @@ class App : Application() {
                             return@addInterceptor chain.proceed(chain.request())
                         }
                     }
-                    .addInterceptor(HttpLoggingInterceptor { message ->
-                        Log.wtf("lol", message)
-                    }.apply {
-                        level = HttpLoggingInterceptor.Level.BODY
-                    })
+//                    .addInterceptor(HttpLoggingInterceptor { message ->
+//                        Log.wtf("lol", message)
+//                    }.apply {
+//                        level = HttpLoggingInterceptor.Level.BODY
+//                    })
                     .build()
             )
             .build()
