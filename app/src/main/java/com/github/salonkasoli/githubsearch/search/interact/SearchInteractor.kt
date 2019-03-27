@@ -12,14 +12,14 @@ class SearchInteractor(
 
     private var failCallback: ((Unit) -> (Unit))? = null
     private var successCallback: ((searchResponse: SearchResponse, repoName: String) -> (Unit))? = null
-    private var loadingCallback: ((Unit) -> (Unit))? = null
+    private var loadingCallback: ((repoName: String) -> (Unit))? = null
 
 
     /**
      * Searches repos by name.
      */
     fun search(repoName: String) {
-        loadingCallback?.invoke(Unit)
+        loadingCallback?.invoke(repoName)
         val query = "$repoName in:name"
         retrofit.create(SearchApi::class.java).search(query, 1).enqueue(object : Callback<SearchResponse> {
             override fun onResponse(call: Call<SearchResponse>, response: Response<SearchResponse>) {
@@ -44,7 +44,7 @@ class SearchInteractor(
         this.successCallback = callback
     }
 
-    fun setLoadingCallback(callback: ((Unit) -> (Unit))?) {
+    fun setLoadingCallback(callback: ((repoName: String) -> (Unit))?) {
         this.loadingCallback = callback
     }
 }

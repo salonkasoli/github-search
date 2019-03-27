@@ -16,10 +16,7 @@ import com.github.salonkasoli.githubsearch.search.model.GithubRepo
 
 class ReposListAdapter : RecyclerView.Adapter<ReposListAdapter.RepoViewHolder>() {
 
-    private var repos: List<GithubRepo> = ArrayList()
-    fun setRepos(repos: List<GithubRepo>) {
-        this.repos = repos
-    }
+    var repos: List<GithubRepo> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RepoViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.search_item, parent, false)

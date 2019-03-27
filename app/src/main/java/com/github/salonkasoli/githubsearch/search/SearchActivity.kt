@@ -2,12 +2,15 @@ package com.github.salonkasoli.githubsearch.search
 
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.github.salonkasoli.githubsearch.App
 import com.github.salonkasoli.githubsearch.R
 import com.github.salonkasoli.githubsearch.common.Toaster
@@ -26,6 +29,8 @@ class SearchActivity : AppCompatActivity() {
         private const val DEFAULT_SEARCH_QUERY = "android"
     }
 
+    private lateinit var swipeLayout: SwipeRefreshLayout
+    private lateinit var loadingView: View
     private lateinit var interactor: SearchInteractor
     private lateinit var toaster: Toaster
     private lateinit var adapter: ReposListAdapter
@@ -43,6 +48,8 @@ class SearchActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
 
+        this.loadingView = findViewById(R.id.loading_view)
+        this.swipeLayout = findViewById(R.id.swipe_layout)
         val list = findViewById<RecyclerView>(R.id.list)
         list.layoutManager = LinearLayoutManager(this)
         this.adapter = ReposListAdapter()
@@ -53,6 +60,10 @@ class SearchActivity : AppCompatActivity() {
         this.toaster = Toaster(this)
         this.searchQuery = savedInstanceState?.getString(BUNDLE_QUERY) ?: DEFAULT_SEARCH_QUERY
         this.userInput = savedInstanceState?.getString(BUNDLE_USER_INPUT)
+
+        swipeLayout.setOnRefreshListener {
+            interactor.search(searchQuery)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -104,18 +115,27 @@ class SearchActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        interactor.setLoadingCallback {
-            toaster.show("loading")
+        interactor.setLoadingCallback { repoName ->
+            if (repoName == searchQuery) {
+                if (adapter.repos.isEmpty()) {
+                    loadingView.visibility = View.VISIBLE
+                    swipeLayout.isRefreshing = false
+                } else {
+                    loadingView.visibility = View.GONE
+                    swipeLayout.isRefreshing = true
+                }
+            }
         }
         interactor.setSuccessCallback { searchResponse, repoName ->
             cache.setRepos(repoName, searchResponse.items)
             if (repoName == searchQuery) {
-                toaster.show("loaded")
-                adapter.setRepos(searchResponse.items)
+                loadingView.visibility = View.GONE
+                swipeLayout.isRefreshing = false
+                adapter.repos = searchResponse.items
                 adapter.notifyDataSetChanged()
             }
         }
-        adapter.setRepos(cache.getRepos(searchQuery) ?: ArrayList())
+        adapter.repos = cache.getRepos(searchQuery) ?: ArrayList()
         adapter.notifyDataSetChanged()
         search(searchQuery)
     }
@@ -139,8 +159,9 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun search(query: String?) {
-        interactor.search(
-            if (TextUtils.isEmpty(query)) DEFAULT_SEARCH_QUERY else query!!
-        )
+        if (TextUtils.isEmpty(query)) {
+            searchQuery = DEFAULT_SEARCH_QUERY
+        }
+        interactor.search(searchQuery)
     }
 }

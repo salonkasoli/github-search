@@ -16,6 +16,7 @@ class App : Application() {
         lateinit var instance: App
     }
 
+    // We dont really need DI framework. It should be enough just to make App.instance.{dep}
     lateinit var retrofit: Retrofit
     lateinit var githubUserCache: GithubUserCache
     lateinit var searchCache: SearchCache
