@@ -1,5 +1,6 @@
 package com.github.salonkasoli.githubsearch.search.interact
 
+import android.util.Log
 import com.github.salonkasoli.githubsearch.search.model.SearchResponse
 import retrofit2.Call
 import retrofit2.Callback
@@ -13,6 +14,11 @@ class SearchInteractor(
     private var failCallback: ((Unit) -> (Unit))? = null
     private var successCallback: ((searchResponse: SearchResponse, repoName: String) -> (Unit))? = null
     private var loadingCallback: ((repoName: String) -> (Unit))? = null
+
+
+    private var loadMoreFailedCallback: ((Unit) -> (Unit))? = null
+    private var loadMoreSuccessCallback: ((searchResponse: SearchResponse, repoName: String) -> (Unit))? = null
+    private var loadMoreLoadingCallback: ((repoName: String) -> (Unit))? = null
 
 
     /**
@@ -36,6 +42,24 @@ class SearchInteractor(
         })
     }
 
+    fun searchMore(repoName: String, pageNumber: Int) {
+        loadMoreLoadingCallback?.invoke(repoName)
+        val query = "$repoName in:name"
+        retrofit.create(SearchApi::class.java).search(query, pageNumber).enqueue(object : Callback<SearchResponse> {
+            override fun onResponse(call: Call<SearchResponse>, response: Response<SearchResponse>) {
+                if (response.code() == 200) {
+                    loadMoreSuccessCallback?.invoke(response.body()!!, repoName)
+                } else {
+                    loadMoreFailedCallback?.invoke(Unit)
+                }
+            }
+
+            override fun onFailure(call: Call<SearchResponse>, t: Throwable) {
+                failCallback?.invoke(Unit)
+            }
+        })
+    }
+
     fun setFailCallback(callback: ((Unit) -> (Unit))?) {
         this.failCallback = callback
     }
@@ -46,5 +70,13 @@ class SearchInteractor(
 
     fun setLoadingCallback(callback: ((repoName: String) -> (Unit))?) {
         this.loadingCallback = callback
+    }
+
+    fun setLoadMoreSuccessCallback(callback: ((searchResponse: SearchResponse, repoName: String) -> Unit)?) {
+        this.loadMoreSuccessCallback = callback
+    }
+
+    fun setLoadMoreLoadingCallback(callback: ((repoName: String) -> Unit)?) {
+        this.loadMoreLoadingCallback = callback
     }
 }

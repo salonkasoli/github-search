@@ -29,14 +29,13 @@ class SearchActivity : AppCompatActivity() {
         private const val DEFAULT_SEARCH_QUERY = "android"
     }
 
-    private lateinit var swipeLayout: SwipeRefreshLayout
-    private lateinit var loadingView: View
     private lateinit var interactor: SearchInteractor
     private lateinit var toaster: Toaster
-    private lateinit var adapter: ReposListAdapter
     private lateinit var cache: SearchCache
     // I HATE YOU, SEARCH VIEW!!!
     private lateinit var searchView: SearchView
+    private lateinit var paginationController: PaginationController
+    private lateinit var reposListWidget: ReposListWidget
 
     // Query to search.
     private lateinit var searchQuery: String
@@ -48,20 +47,31 @@ class SearchActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
 
-        this.loadingView = findViewById(R.id.loading_view)
-        this.swipeLayout = findViewById(R.id.swipe_layout)
         val list = findViewById<RecyclerView>(R.id.list)
-        list.layoutManager = LinearLayoutManager(this)
-        this.adapter = ReposListAdapter()
+        val layoutManager = LinearLayoutManager(this)
+        list.layoutManager = layoutManager
+        val adapter = ReposListAdapter()
         list.adapter = adapter
+        this.paginationController = PaginationController(
+            list,
+            adapter,
+            { return@PaginationController this.reposListWidget.isLoading() },
+            { searchMore(searchQuery) },
+            lifecycle
+        )
 
         this.cache = App.instance.searchCache
         this.interactor = SearchInteractor(App.instance.retrofit)
         this.toaster = Toaster(this)
         this.searchQuery = savedInstanceState?.getString(BUNDLE_QUERY) ?: DEFAULT_SEARCH_QUERY
         this.userInput = savedInstanceState?.getString(BUNDLE_USER_INPUT)
-
-        swipeLayout.setOnRefreshListener {
+        val swipeRefreshLayout = findViewById<SwipeRefreshLayout>(R.id.swipe_layout)
+        this.reposListWidget = ReposListWidget(
+            adapter,
+            findViewById(R.id.loading_view),
+            swipeRefreshLayout
+        )
+        swipeRefreshLayout.setOnRefreshListener {
             interactor.search(searchQuery)
         }
     }
@@ -73,7 +83,7 @@ class SearchActivity : AppCompatActivity() {
         // Android, i hate you!
         this.searchView = item.actionView as SearchView
         searchView.maxWidth = Int.MAX_VALUE
-        item.setOnActionExpandListener(object: MenuItem.OnActionExpandListener {
+        item.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                 return true
             }
@@ -116,34 +126,47 @@ class SearchActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         interactor.setLoadingCallback { repoName ->
-            if (repoName == searchQuery) {
-                if (adapter.repos.isEmpty()) {
-                    loadingView.visibility = View.VISIBLE
-                    swipeLayout.isRefreshing = false
-                } else {
-                    loadingView.visibility = View.GONE
-                    swipeLayout.isRefreshing = true
-                }
+            if (repoName != searchQuery) {
+                return@setLoadingCallback
             }
+            reposListWidget.showLoading()
         }
         interactor.setSuccessCallback { searchResponse, repoName ->
             cache.setRepos(repoName, searchResponse.items)
-            if (repoName == searchQuery) {
-                loadingView.visibility = View.GONE
-                swipeLayout.isRefreshing = false
-                adapter.repos = searchResponse.items
-                adapter.notifyDataSetChanged()
+            if (repoName != searchQuery) {
+                return@setSuccessCallback
             }
+            reposListWidget.showRepos(cache.getRepos(repoName)?.repos)
         }
-        adapter.repos = cache.getRepos(searchQuery) ?: ArrayList()
-        adapter.notifyDataSetChanged()
-        search(searchQuery)
+        interactor.setLoadMoreSuccessCallback { searchResponse, repoName ->
+            cache.addRepos(repoName, searchResponse.items)
+            if (repoName != searchQuery) {
+                return@setLoadMoreSuccessCallback
+            }
+            if (searchResponse.items.isEmpty()) {
+                paginationController.isEnabled = false
+            }
+            reposListWidget.showRepos(cache.getRepos(searchQuery)?.repos)
+        }
+        interactor.setLoadMoreLoadingCallback { repoName ->
+            if (repoName != searchQuery) {
+                return@setLoadMoreLoadingCallback
+            }
+            reposListWidget.showLoadMore()
+        }
+        val cachedRepos = cache.getRepos(searchQuery)?.repos
+        reposListWidget.showRepos(cachedRepos)
+        if (cachedRepos == null || cachedRepos.isEmpty()) {
+            search(searchQuery)
+        }
     }
 
     override fun onPause() {
         super.onPause()
         interactor.setSuccessCallback(null)
         interactor.setLoadingCallback(null)
+        interactor.setLoadMoreSuccessCallback(null)
+        interactor.setLoadMoreLoadingCallback(null)
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -159,9 +182,24 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun search(query: String?) {
+        paginationController.isEnabled = true
         if (TextUtils.isEmpty(query)) {
             searchQuery = DEFAULT_SEARCH_QUERY
         }
         interactor.search(searchQuery)
+    }
+
+    private fun searchMore(query: String?) {
+        paginationController.isEnabled = true
+        if (TextUtils.isEmpty(query)) {
+            searchQuery = DEFAULT_SEARCH_QUERY
+        }
+        var newPage = cache.getRepos(searchQuery)?.loadedPages
+        if (newPage == null) {
+            newPage = 0
+        } else {
+            newPage += 1
+        }
+        interactor.searchMore(searchQuery, newPage)
     }
 }
