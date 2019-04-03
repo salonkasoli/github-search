@@ -1,5 +1,6 @@
 package com.github.salonkasoli.githubsearch.search
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
@@ -17,6 +18,7 @@ import com.github.salonkasoli.githubsearch.common.Toaster
 import com.github.salonkasoli.githubsearch.core.cache.SearchCache
 import com.github.salonkasoli.githubsearch.search.interact.SearchInteractor
 import com.github.salonkasoli.githubsearch.search.rv.ReposListAdapter
+import com.github.salonkasoli.githubsearch.signin.SignInActivity
 
 class SearchActivity : AppCompatActivity() {
 
@@ -121,6 +123,13 @@ class SearchActivity : AppCompatActivity() {
             }
         })
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item?.itemId == R.id.login) {
+            startActivity(Intent(this, SignInActivity::class.java))
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onResume() {

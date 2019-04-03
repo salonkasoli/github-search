@@ -7,4 +7,10 @@
             app:showAsAction="collapseActionView|ifRoom"
             app:actionViewClass="androidx.appcompat.widget.SearchView"/>
 
+    <item
+            app:showAsAction="ifRoom"
+            android:icon="@drawable/ic_person_white_24dp"
+            android:title="Логин"
+            android:id="@+id/login"/>
+
 </menu>

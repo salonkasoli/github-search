@@ -1,21 +1,43 @@
 package com.github.salonkasoli.githubsearch.core.cache
 
+import android.content.SharedPreferences
 import com.github.salonkasoli.githubsearch.signin.model.GithubUser
 
-class GithubUserCache {
+class GithubUserCache(
+    private val prefs: SharedPreferences
+) {
 
-    private var user: GithubUser? = null
-    private var token: String? = null
+    companion object {
+        private const val PREF_USERNAME = "username"
+        private const val PREF_AVATAR = "avatar"
+        private const val PREF_TOKEN = "auth_token"
+    }
 
     fun setGithubUser(user: GithubUser?) {
-        this.user = user
+        prefs.edit()
+            .putString(PREF_USERNAME, user?.username)
+            .putString(PREF_AVATAR, user?.avatarUrl)
+            .apply()
+    }
+
+    fun getGithubUser() : GithubUser? {
+        val name = prefs.getString(PREF_USERNAME, null)
+        val avatar = prefs.getString(PREF_AVATAR, null)
+        return if (name != null && avatar != null) {
+            GithubUser(name, avatar)
+        } else {
+            null
+        }
     }
 
     fun setAuthToken(token: String?) {
-        this.token = token
+        prefs.edit()
+            .putString(PREF_TOKEN, token)
+            .apply()
     }
 
     fun getAuthToken() : String? {
-        return this.token
+        return prefs.getString(PREF_TOKEN, null)
     }
+
 }

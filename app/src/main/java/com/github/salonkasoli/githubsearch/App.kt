@@ -1,6 +1,7 @@
 package com.github.salonkasoli.githubsearch
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.github.salonkasoli.githubsearch.core.cache.GithubUserCache
@@ -25,7 +26,7 @@ class App : Application() {
         instance = this
         super.onCreate()
         Fresco.initialize(this)
-        githubUserCache = GithubUserCache()
+        githubUserCache = GithubUserCache(getSharedPreferences("user_cache", Context.MODE_PRIVATE))
         searchCache = SearchCache()
         retrofit = Retrofit.Builder()
             .baseUrl("https://api.github.com/")
